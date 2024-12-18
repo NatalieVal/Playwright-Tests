@@ -92,7 +92,7 @@ test('Extracting values', async({page}) =>{
     const placeholderValue = await emailField.getAttribute('placeholder')
     expect(placeholderValue).toEqual('Email')
 })
-test.only('Assertions', async({page}) => {
+test('Assertions', async({page}) => {
     //generic assertions
     const basicFormButton = page.locator('nb-card').filter({hasText: "Basic form"}).locator('button')
     const text = await basicFormButton.textContent()

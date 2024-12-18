@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test'
-import { HelperBase } from './HelperBase';
+import { HelperBase } from './helperBase';
 
 export class FormLayoutsPage extends HelperBase{
 

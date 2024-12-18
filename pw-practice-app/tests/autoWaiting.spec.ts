@@ -1,7 +1,7 @@
 import {test, expect} from "@playwright/test"
 import { timeout } from "rxjs-compat/operator/timeout";
 test.beforeEach(async({page}, testInfo) => {
-    await page.goto('http://uitestingplayground.com/ajax');
+    await page.goto(process.env.URL);
     await page.getByText('Button Triggering AJAX Request').click();
     testInfo.setTimeout(testInfo.timeout+2000)// it will add 2 seconds for every test in the test suite
    })
