@@ -38,18 +38,36 @@ class MainPageHeader extends MainPageHeaderLocators{
     }
 
     async getItemsCountOnShoppingCartIcon(): Promise<string> {
-        await this.page.waitForSelector(this.shoppingCartIcon, {
+        // Wait for the shopping cart link to be visible
+        await this.page.waitForSelector(this.shoppingCartLink, {
             state: 'visible',
-            timeout: 5000, // Adjust timeout as needed
+            timeout: 2000, 
         });
-        const shoppingCart = await this.getElement(this.shoppingCartIcon);
-        await this.base.waitForElementState(shoppingCart, "visible", 5);
-        const numberOfItemsInCart = await this.base.getTextOfElement(shoppingCart);
-
-        console.log(`captured ${numberOfItemsInCart} items in the shopping cart`);
-        return numberOfItemsInCart; 
+    
+        // Check if the shopping cart count badge is visible
+        const isCountVisible = await this.isShoppingCartCountVisible();
+    
+        if (isCountVisible) {
+            // If visible, fetch the count
+            const shoppingCartCount = await this.getElement(this.shoppingCartIcon);
+            const numberOfItemsInCart = await this.base.getTextOfElement(shoppingCartCount);
+            console.log(`Captured ${numberOfItemsInCart} items in the shopping cart`);
+            return numberOfItemsInCart;
+        } 
+    
+        // Return '0' if the badge is not visible
+        console.log('Shopping cart is empty');
+        return '0'; 
     }
     
+    async isShoppingCartCountVisible(): Promise<boolean> {
+        console.log("Checking the shopping cart count visibility");
+        const shoppingCartIconElement = await this.getElement(this.shoppingCartIcon);
+    
+        // Use base.isElementVisible to check if the element is visible
+        const isVisible = await this.base.isElementVisible(shoppingCartIconElement, 5);
+        return isVisible;
+    }
     
 }
 export default MainPageHeader;

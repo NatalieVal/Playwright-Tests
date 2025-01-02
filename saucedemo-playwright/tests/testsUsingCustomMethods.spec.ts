@@ -9,6 +9,7 @@ import DetailedProductPage from '../src/app/page-objects/detailedProductPage/det
 import MainPageHeader from '../src/app/page-objects/mainPageHeader/mainPageHeader';
 import AboutPage from '../src/app/page-objects/aboutPage/aboutPage';
 import FileConverterPage from '../src/app/page-objects/fileConverterPage/fileConverterPage';
+import ShoppingCartPage from '../src/app/page-objects/shoppingCartPage/shoppingCartPage';
 
 test.describe('Login suite', () => {
 
@@ -151,19 +152,9 @@ test.describe('Product page suite', () => {
     const expectedProductPageURL = "https://www.saucedemo.com/inventory-item.html"
     expect(detailedProductPageUrl).toContain(expectedProductPageURL); 
   })
-  test.only('Add a particular product item to the shopping cart', async ({page}) => {
-   
-    const productsPage = new ProductsPage(page);
-    await productsPage.addProductToCart('Sauce Labs Backpack');
-    
-    const shoppingCartIcon = new MainPageHeader(page);
-    await shoppingCartIcon.goToShoppingCart();
-    //create shopping cart page and page locators to validate the added product
-    await page.pause();
-    
-  })
   
-  test('Check the number of items in the shopping cart', async ({page}) => {
+  
+  test('Check the number of items in the shopping cart on the main page', async ({page}) => {
    
     const productsPage = new ProductsPage(page);
     await productsPage.addProductToCart('Sauce Labs Backpack');
@@ -177,16 +168,85 @@ test.describe('Product page suite', () => {
   
   })
 })
-test.describe('About Page', () => {
-  test('Go to About page', async ({page})=> {
+
+test.describe('Shopping Cart suite', () => {
+  test.beforeEach(async({page})=> {
     const login_username = testData.standardUserlogin.username;
     const login_password = testData.standardUserlogin.password;
     const login = new LoginPage(page);
-    const mainPageHeader = new MainPageHeader(page);
-    const aboutPage = new AboutPage(page);
     await login.goToApplication('https://www.saucedemo.com/');
     await login.defaultLoginToApplication(login_username, login_password);
-  
+  })
+
+  test('Add a product item to the shopping cart', async ({page}) => {
+   
+    const productsPage = new ProductsPage(page);
+    await productsPage.addProductToCart('Sauce Labs Backpack');
+    
+    const shoppingCartIcon = new MainPageHeader(page);
+    await shoppingCartIcon.goToShoppingCart();
+    //create shopping cart page and validate the added product
+    const shoppingCartPage = new ShoppingCartPage(page);
+    const listOfProductsInCart = await shoppingCartPage.getAllItemsInCart();
+    console.log('List of Products in cart:', listOfProductsInCart);
+    expect(listOfProductsInCart).toContain('Sauce Labs Backpack');
+    
+  })
+  test('Add several product items to the shopping cart', async ({page}) => {
+    const productsToAddToCart = [
+      'Sauce Labs Backpack',
+      'Sauce Labs Bike Light',
+      'Sauce Labs Onesie',
+      'Sauce Labs Fleece Jacket'
+    ]
+    const productsPage = new ProductsPage(page);
+    const mainPageHeader = new MainPageHeader(page);
+    const shoppingCartPage = new ShoppingCartPage(page);
+    const shoppingCartIcon = new MainPageHeader(page);
+
+    for (const product of productsToAddToCart) {
+      await productsPage.addProductToCart(product);
+    }
+        
+    await shoppingCartIcon.goToShoppingCart();
+        
+    const listOfProductsInCart = await shoppingCartPage.getAllItemsInCart();
+    console.log('List of Products in cart:', listOfProductsInCart);
+    expect(listOfProductsInCart).toEqual(productsToAddToCart);
+
+    let numberOfItemsInCart = await mainPageHeader.getItemsCountOnShoppingCartIcon();
+    expect(Number(numberOfItemsInCart)).toEqual(productsToAddToCart.length);
+    
+  })
+  test('Remove a product item from the shopping cart', async ({page}) => {
+    const productsPage = new ProductsPage(page);
+    const mainPageHeader = new MainPageHeader(page);
+    const shoppingCartPage = new ShoppingCartPage(page);
+    const shoppingCartIcon = new MainPageHeader(page);
+
+    await productsPage.addProductToCart('Sauce Labs Backpack');
+    let numberOfItemsInCart = await mainPageHeader.getItemsCountOnShoppingCartIcon();
+    expect(numberOfItemsInCart).toEqual('1');
+    await shoppingCartIcon.goToShoppingCart();
+    await shoppingCartPage.removeProductFromShoppingCart();
+    numberOfItemsInCart = await mainPageHeader.getItemsCountOnShoppingCartIcon();
+    expect(numberOfItemsInCart).toEqual('0');
+
+  })
+})
+test.describe('About Page', () => {
+  test.beforeEach(async({page})=> {
+    const login_username = testData.standardUserlogin.username;
+    const login_password = testData.standardUserlogin.password;
+    const login = new LoginPage(page);
+    await login.goToApplication('https://www.saucedemo.com/');
+    await login.defaultLoginToApplication(login_username, login_password);
+  })
+  test('Go to About page', async ({page})=> {
+    
+    const mainPageHeader = new MainPageHeader(page);
+    const aboutPage = new AboutPage(page);
+     
     await mainPageHeader.openMenu();
     await mainPageHeader.goToAboutPage();
   
